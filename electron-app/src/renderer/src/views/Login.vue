@@ -4,11 +4,20 @@
       <h2 class="login-title">三驰订单查询系统</h2>
       <el-form :model="loginForm" :rules="rules" ref="loginForm">
         <el-form-item prop="username">
-          <el-input
+          <el-select
             v-model="loginForm.username"
-            placeholder="请输入用户名"
-            prefix-icon="User"
-          ></el-input>
+            placeholder="请选择用户"
+            filterable
+            clearable
+            @focus="loadEmployees"
+          >
+            <el-option
+              v-for="item in employeeOptions"
+              :key="item.etypeId"
+              :label="item.eFullName"
+              :value="item.etypeId"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item prop="password">
           <el-input
@@ -29,6 +38,8 @@
 </template>
 
 <script>
+import { getEmployees } from '../utils/request'
+
 export default {
   data() {
     return {
@@ -36,13 +47,24 @@ export default {
         username: '',
         password: ''
       },
+      employeeOptions: [],
       rules: {
-        username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+        username: [{ required: true, message: '请选择用户', trigger: 'blur' }],
         password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
       }
     }
   },
   methods: {
+    async loadEmployees() {
+      if (this.employeeOptions.length > 0) return
+      try {
+        const data = await getEmployees()
+        this.employeeOptions = data
+      } catch (error) {
+        console.error('获取用户列表失败:', error)
+        this.$message.error('获取用户列表失败')
+      }
+    },
     handleLogin() {
       this.$refs.loginForm.validate((valid) => {
         if (valid) {
