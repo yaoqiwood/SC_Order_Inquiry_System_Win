@@ -2,6 +2,9 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+const Store = require('electron-store')
+const store = new Store()
+
 
 function createWindow() {
   // Create the browser window.
@@ -16,13 +19,14 @@ function createWindow() {
     title: 'SC订单查询系统',
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
-      webSecurity: false,
-      nodeIntegration: true,
-      contextIsolation: false
-    },
+      preload: join(__dirname, '../preload/index.js'), // 假设预加载脚本在 src/preload 目录,
+      sandbox: false,  // 启用沙盒模式
+      webSecurity: true,  // 启用web安全
+      nodeIntegration: false,  // 禁用Node集成
+      contextIsolation: true  // 启用上下文隔离
+    }
   })
+
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -77,5 +81,16 @@ app.on('window-all-closed', () => {
   }
 })
 
-// In this file you can include the rest of your app's specific main process
-// code. You can also put them in separate files and require them here.
+// Add these IPC handlers before app.whenReady()
+ipcMain.handle('electron-store-get-data', (event, key) => {
+  return store.get(key)
+})
+
+ipcMain.on('electron-store-set-data', (event, { key, value }) => {
+  store.set(key, value)
+})
+
+ipcMain.on('electron-store-delete-data', (event, key) => {
+  store.delete(key)
+})
+

@@ -9,7 +9,7 @@
             placeholder="请选择用户"
             filterable
             clearable
-            @focus="loadEmployees"
+            prefix-icon="User"
           >
             <el-option
               v-for="item in employeeOptions"
@@ -30,6 +30,9 @@
           </el-input>
         </el-form-item>
         <el-form-item>
+          <el-checkbox v-model="rememberPassword">记住密码</el-checkbox>
+        </el-form-item>
+        <el-form-item>
           <el-button type="primary" @click="handleLogin" class="login-btn">登录</el-button>
         </el-form-item>
       </el-form>
@@ -38,7 +41,7 @@
 </template>
 
 <script>
-import { getEmployees } from '../utils/request'
+import { getEmployees, login } from '../utils/request'
 
 export default {
   data() {
@@ -47,6 +50,7 @@ export default {
         username: '',
         password: ''
       },
+      rememberPassword: false,
       employeeOptions: [],
       rules: {
         username: [{ required: true, message: '请选择用户', trigger: 'blur' }],
@@ -54,7 +58,21 @@ export default {
       }
     }
   },
+  async created() {
+    await this.loadEmployees()
+    this.loadSavedCredentials()
+  },
   methods: {
+    async loadSavedCredentials() {
+      const saved = window.electronAPI.store.get('credentials')
+      if (saved) {
+        this.loginForm = {
+          username: saved.username,
+          password: saved.password
+        }
+        this.rememberPassword = saved.remember
+      }
+    },
     async loadEmployees() {
       if (this.employeeOptions.length > 0) return
       try {
@@ -65,14 +83,34 @@ export default {
         this.$message.error('获取用户列表失败')
       }
     },
-    handleLogin() {
-      this.$refs.loginForm.validate((valid) => {
+    async handleLogin() {
+      this.$refs.loginForm.validate(async (valid) => {
         if (valid) {
-          // 登录成功后调整窗口大小
-          if (window.electronAPI) {
-            window.electronAPI.resizeWindow(1200, 800)
+          try {
+            const response = await login({
+              etypeId: this.loginForm.username,
+              password: this.loginForm.password
+            })
+            this.$message.success(`登录成功: ${JSON.stringify(response)}`)
+            // 记住密码逻辑
+            if (this.rememberPassword) {
+              window.electronAPI.store.set('credentials', {
+                username: this.loginForm.username,
+                password: this.loginForm.password,
+                remember: true
+              })
+            } else {
+              window.electronAPI.store.delete('credentials')
+            }
+            // 调整窗口大小并跳转
+            if (window.electronAPI) {
+              window.electronAPI.resizeWindow(1200, 800)
+            }
+            this.$router.push('/main')
+          } catch (error) {
+            console.error('登录失败:', error)
+            this.$message.error('登录失败，请检查用户名和密码')
           }
-          this.$router.push('/main')
         }
       })
     }

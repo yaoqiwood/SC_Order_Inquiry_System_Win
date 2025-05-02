@@ -1,20 +1,30 @@
-import { contextBridge } from 'electron'
-import { electronAPI } from '@electron-toolkit/preload'
+const { contextBridge } = require('electron')
+const { electronAPI } = require('@electron-toolkit/preload')
+const electron = require('electron')
+const Store = require('electron-store')
 
-// Custom APIs for renderer
-const api = {}
+const store = new Store()
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
+// 合并所有API到单个对象
+const exposedAPI = {
+  ...electronAPI,
+  store: {
+    get: (key) => store.get(key),
+    set: (key, value) => store.set(key, value),
+    delete: (key) => store.delete(key)
+  },
+  resizeWindow: (width, height) => {
+    electron.ipcRenderer.send('resize-window', { width, height })
+  }
+}
+
+// 单次暴露操作
 if (process.contextIsolated) {
   try {
-    contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
+    contextBridge.exposeInMainWorld('electronAPI', exposedAPI)
   } catch (error) {
-    console.error(error)
+    console.error('[preload] API暴露失败:', error)
   }
 } else {
-  window.electron = electronAPI
-  window.api = api
+  window.electronAPI = exposedAPI
 }
