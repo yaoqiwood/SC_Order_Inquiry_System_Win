@@ -94,3 +94,11 @@ ipcMain.on('electron-store-delete-data', (event, key) => {
   store.delete(key)
 })
 
+ipcMain.on('resize-window', (event, { width, height }) => {
+  const win = BrowserWindow.getFocusedWindow()
+  if (win) {
+    win.setSize(width, height)
+    win.center() // 可选：调整后居中窗口
+  }
+})
+

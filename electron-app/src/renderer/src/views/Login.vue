@@ -3,9 +3,9 @@
     <el-card class="login-card">
       <h2 class="login-title">三驰订单查询系统</h2>
       <el-form :model="loginForm" :rules="rules" ref="loginForm">
-        <el-form-item prop="username">
+        <el-form-item prop="userId">
           <el-select
-            v-model="loginForm.username"
+            v-model="loginForm.userId"
             placeholder="请选择用户"
             filterable
             clearable
@@ -47,13 +47,14 @@ export default {
   data() {
     return {
       loginForm: {
+        userId: '',
         username: '',
         password: ''
       },
       rememberPassword: false,
       employeeOptions: [],
       rules: {
-        username: [{ required: true, message: '请选择用户', trigger: 'blur' }],
+        userId: [{ required: true, message: '请选择用户', trigger: 'blur' }],
         password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
       }
     }
@@ -67,6 +68,7 @@ export default {
       const saved = window.electronAPI.store.get('credentials')
       if (saved) {
         this.loginForm = {
+          userId: saved.userId,
           username: saved.username,
           password: saved.password
         }
@@ -87,14 +89,21 @@ export default {
       this.$refs.loginForm.validate(async (valid) => {
         if (valid) {
           try {
-            const response = await login({
-              etypeId: this.loginForm.username,
+            await login({
+              etypeId: this.loginForm.userId,
               password: this.loginForm.password
             })
-            this.$message.success(`登录成功: ${JSON.stringify(response)}`)
+            const selectedUser = this.loginForm.username // 假设 userId 是用户的唯一标识符，用于后续验证和显示用户信息
+            this.$message.success(`登录成功，欢迎${selectedUser || '用户'}`)
             // 记住密码逻辑
             if (this.rememberPassword) {
+              this.loginForm.username = this.employeeOptions.find(
+                (user) => user.etypeId === this.loginForm.userId
+              )?.eFullName || '未知用户' // 假设 eFullName 是用户的显示名，你可以根据实际情况修改
+              console.log(this.loginForm.username)
+              // 保存凭据到本地存储
               window.electronAPI.store.set('credentials', {
+                userId: this.loginForm.userId,
                 username: this.loginForm.username,
                 password: this.loginForm.password,
                 remember: true
@@ -104,9 +113,9 @@ export default {
             }
             // 调整窗口大小并跳转
             if (window.electronAPI) {
-              window.electronAPI.resizeWindow(1200, 800)
+              window.electronAPI.resizeWindow(1430, 800)
             }
-            this.$router.push('/main')
+            this.$router.push('/mainLayout')
           } catch (error) {
             console.error('登录失败:', error)
             this.$message.error('登录失败，请检查用户名和密码')
