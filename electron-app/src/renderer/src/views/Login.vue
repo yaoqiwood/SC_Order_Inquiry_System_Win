@@ -115,6 +115,8 @@ export default {
             // 调整窗口大小并跳转
             if (window.electronAPI) {
               window.electronAPI.resizeWindow(1430, 800)
+              window.electronAPI.setWindowResizable(true) // 新增：允许窗口拉伸
+              window.electronAPI.setFullScreenable(true) // 新增：允许全屏
             }
             this.$router.push('/mainLayout')
           } catch (error) {

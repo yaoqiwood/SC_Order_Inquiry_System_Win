@@ -15,6 +15,12 @@ const exposedAPI = {
   },
   resizeWindow: (width, height) => {
     electron.ipcRenderer.send('resize-window', { width, height })
+  },
+  setWindowResizable: (resizable) => {
+    electron.ipcRenderer.send('set-window-resizable', resizable)
+  },
+  setFullScreenable: (fullScreenable) => {
+    electron.ipcRenderer.send('set-full-screenable', fullScreenable)
   }
 }
 

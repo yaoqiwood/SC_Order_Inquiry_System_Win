@@ -102,3 +102,17 @@ ipcMain.on('resize-window', (event, { width, height }) => {
   }
 })
 
+ipcMain.on('set-window-resizable', (event, resizable) => {
+  const win = BrowserWindow.getFocusedWindow()
+  if (win) {
+    win.setResizable(resizable)
+  }
+})
+
+ipcMain.on('set-full-screenable', (event, fullScreenable) => {
+  const win = BrowserWindow.getFocusedWindow()
+  if (win) {
+    win.setFullScreenable(fullScreenable)
+  }
+})
+
