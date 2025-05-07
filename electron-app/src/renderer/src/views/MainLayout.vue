@@ -2,6 +2,9 @@
   <div class="main-container">
     <!-- 顶部导航栏 -->
     <div class="header">
+      <div class="logo-container">
+        <img src="../assets/logo.jpg" alt="三驰工具宝" class="logo">
+      </div> 
       <div class="user-info">
         <el-avatar :size="40" :src="user.avatar" />
         <span class="username">{{ user.name }}</span>
@@ -29,14 +32,14 @@
           active-text-color="#ffd04b">
           <el-menu-item index="/dashboard">
             <el-icon><pie-chart /></el-icon>
-            <span>数据看板</span>
+            <span>仪表台</span>
           </el-menu-item>
           <el-sub-menu index="2">
             <template #title>
               <el-icon><document /></el-icon>
-              <span>订单管理</span>
+              <span>数据查询</span>
             </template>
-            <el-menu-item index="/orders/list">订单列表</el-menu-item>
+            <el-menu-item index="/orders/list">历史单据查询</el-menu-item>
             <el-menu-item index="/orders/create">新建订单</el-menu-item>
           </el-sub-menu>
           <!-- 更多菜单项... -->
@@ -135,5 +138,17 @@ const breadcrumbs = computed(() => {
   padding: 20px;
   border-radius: 4px;
   min-height: calc(100vh - 180px);
+}
+
+.logo-container {
+  position: absolute;
+  left: 40px;
+  top: 5px;
+}
+
+.logo {
+  height: 50px;
+  width: auto; /* 自动宽度保持比例 */
+  object-fit: contain; /* 保持图片比例 */
 }
 </style>

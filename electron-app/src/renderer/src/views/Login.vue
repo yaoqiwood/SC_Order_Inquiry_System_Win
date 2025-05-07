@@ -9,6 +9,7 @@
             placeholder="请选择用户"
             filterable
             clearable
+            @clear="handleClearUser"
             prefix-icon="User"
           >
             <el-option
@@ -122,6 +123,11 @@ export default {
           }
         }
       })
+    },
+    handleClearUser() {
+      this.loginForm.userId = ''
+      this.loginForm.password = ''  // 同时清空密码框
+      this.$refs.loginForm.clearValidate()  // 清除验证状态
     }
   }
 }
