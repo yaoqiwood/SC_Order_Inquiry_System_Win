@@ -39,7 +39,7 @@
               <el-icon><document /></el-icon>
               <span>数据查询</span>
             </template>
-            <el-menu-item index="/orders/list">历史单据查询</el-menu-item>
+            <el-menu-item index="/orders/historyOrderList">历史单据查询</el-menu-item>
             <el-menu-item index="/orders/create">新建订单</el-menu-item>
           </el-sub-menu>
           <!-- 更多菜单项... -->
@@ -50,11 +50,18 @@
       <div class="content-area">
         <!-- 面包屑导航 -->
         <div class="breadcrumb">
-          <el-breadcrumb separator="/">
-            <el-breadcrumb-item v-for="item in breadcrumbs" :key="item.path">
+          <div class="tab-container">
+            <el-tag
+              v-for="item in breadcrumbs"
+              :key="item.path"
+              :type="$route.path === item.path ? 'primary' : ''"
+              :closable="item.meta.closeable"
+              @close="handleCloseTab(item)"
+              @click="$router.push(item.path)"
+              class="tab-item">
               {{ item.meta.title }}
-            </el-breadcrumb-item>
-          </el-breadcrumb>
+            </el-tag>
+          </div>
         </div>
 
         <!-- 页面内容 -->
@@ -67,18 +74,53 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router' // 新增useRouter
 
 const user = ref({
   name: '管理员',
   avatar: ''
 })
 
+
 const route = useRoute()
+const router = useRouter() // 获取router实例
+const visitedTabs = ref([]) // 存储访问过的标签
+
+// 监听路由变化
+watch(route, (newRoute) => {
+  const matched = newRoute.matched.filter(item => item.meta?.title)
+  if (matched.length > 0) {
+    const existingTab = visitedTabs.value.find(tab => tab.path === newRoute.path)
+    if (!existingTab) {
+      visitedTabs.value.push({
+        path: newRoute.path,
+        meta: {
+          title: matched[0].meta.title,
+          closeable: matched[0].meta.closeable !== false
+        }
+      })
+    }
+  }
+}, { immediate: true })
+
 const breadcrumbs = computed(() => {
-  return route.matched.filter(item => item.meta?.title)
+  return visitedTabs.value
 })
+
+
+
+
+const handleCloseTab = (item) => {
+  if (item.meta.closeable) {
+    visitedTabs.value = visitedTabs.value.filter(tab => tab.path !== item.path)
+    if (route.path === item.path) {
+      // 跳转到最后一个可用标签或首页
+      const lastTab = visitedTabs.value[visitedTabs.value.length - 1]
+      router.push(lastTab?.path || '/dashboard')
+    }
+  }
+}
 </script>
 
 <style scoped>
@@ -120,15 +162,15 @@ const breadcrumbs = computed(() => {
 
 .content-area {
   flex: 1;
-  padding: 20px;
+  padding: 8px;
   margin-left: 220px; /* 为sidebar留出空间 */
   width: calc(100% - 220px); /* 计算剩余宽度 */
   overflow-y: auto;
 }
 
 .breadcrumb {
-  margin-bottom: 20px;
-  padding: 10px;
+  margin-bottom: 10px;
+  padding: 0px;
   background: #f5f5f5;
   border-radius: 4px;
 }
@@ -150,5 +192,43 @@ const breadcrumbs = computed(() => {
   height: 50px;
   width: auto; /* 自动宽度保持比例 */
   object-fit: contain; /* 保持图片比例 */
+}
+
+.tab-container {
+  display: flex;
+  gap: 8px;
+  padding: 4px 0;
+  flex-wrap: wrap;
+}
+
+.tab-item {
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.tab-item:hover {
+  opacity: 0.8;
+}
+
+.tab-item.active {
+  background: #409eff;
+  color: white;
+  border-color: #409eff;
+}
+
+.tab-item:hover {
+  background: #e0e0e0;
+}
+
+.tab-item.active:hover {
+  background: #409eff;
+}
+
+.close-icon {
+  margin-left: 8px;
+  font-size: 12px;
+}
+
+.close-icon:hover {
+  color: #ff4d4f;
 }
 </style>
