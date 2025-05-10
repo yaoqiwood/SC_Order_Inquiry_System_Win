@@ -50,18 +50,7 @@
       <div class="content-area">
         <!-- 面包屑导航 -->
         <div class="breadcrumb">
-          <div class="tab-container">
-            <el-tag
-              v-for="item in breadcrumbs"
-              :key="item.path"
-              :type="$route.path === item.path ? 'primary' : ''"
-              :closable="item.meta.closeable"
-              @close="handleCloseTab(item)"
-              @click="$router.push(item.path)"
-              class="tab-item">
-              {{ item.meta.title }}
-            </el-tag>
-          </div>
+          
         </div>
 
         <!-- 页面内容 -->
@@ -74,8 +63,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router' // 新增useRouter
+import { ref } from 'vue'
 
 const user = ref({
   name: '管理员',
@@ -83,44 +71,7 @@ const user = ref({
 })
 
 
-const route = useRoute()
-const router = useRouter() // 获取router实例
-const visitedTabs = ref([]) // 存储访问过的标签
 
-// 监听路由变化
-watch(route, (newRoute) => {
-  const matched = newRoute.matched.filter(item => item.meta?.title)
-  if (matched.length > 0) {
-    const existingTab = visitedTabs.value.find(tab => tab.path === newRoute.path)
-    if (!existingTab) {
-      visitedTabs.value.push({
-        path: newRoute.path,
-        meta: {
-          title: matched[0].meta.title,
-          closeable: matched[0].meta.closeable !== false
-        }
-      })
-    }
-  }
-}, { immediate: true })
-
-const breadcrumbs = computed(() => {
-  return visitedTabs.value
-})
-
-
-
-
-const handleCloseTab = (item) => {
-  if (item.meta.closeable) {
-    visitedTabs.value = visitedTabs.value.filter(tab => tab.path !== item.path)
-    if (route.path === item.path) {
-      // 跳转到最后一个可用标签或首页
-      const lastTab = visitedTabs.value[visitedTabs.value.length - 1]
-      router.push(lastTab?.path || '/dashboard')
-    }
-  }
-}
 </script>
 
 <style scoped>

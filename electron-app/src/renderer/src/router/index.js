@@ -2,6 +2,7 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 import Login from '../views/Login.vue'
 import MainLayout from '../views/MainLayout.vue'
 import HistoryOrderPage from '../views/pages/historyOrderPage/HistoryOrderPage.vue'
+import Dashboard from '../views/pages/dashboard/Dashboard.vue'
 // import Main from '../views/Main.vue'
 
 const routes = [
@@ -13,8 +14,13 @@ const routes = [
   {
     path: '/mainLayout',
     component: MainLayout,
-    meta: { title: '主页面', closeable: false },
     children: [
+      {
+        path: '/dashboard',
+        name: 'Dashboard',
+        component: Dashboard,
+        meta: { title: '仪表台', closeable:  false}
+      },
       {
         path: '/orders/historyOrderList',
         name: 'HistoryOrderPage',
